@@ -30,6 +30,10 @@ sd_card::~sd_card()
 String sd_card::return_manifest() {
     String manifest = "";
     File file = SD.open("manifest.json");
+    if (!file) {
+        Serial.println("Error: manifest.json not found");
+        return "";
+    }
     JsonDocument listed_files;
     deserializeJson(listed_files, file);
     JsonArray programs=listed_files["programs"];
