@@ -1,0 +1,27 @@
+{
+    "program": {
+        "current_step": 0,
+        "total_steps": 5,
+        "steps": [
+            {
+                "joints":[
+                    {"joint": 1, "angle": 90.0, "direction": 1},
+                    {"joint": 2, "angle": 45.0, "direction": 0},
+                    {"joint": 3, "angle": 30.0, "direction": 1}
+                ]
+
+            },
+            {
+                "joints":[
+                    {"joint": 2, "angle": 45.0, "direction": 0}
+                ]
+            },
+            {
+                "joints":[
+                    {"joint": 3, "angle": 30.0, "direction": 1},
+                    {"joint": 1, "angle": 90.0, "direction": 1}
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "programs": [
+    {
+      "id": 1,
+      "name": "Wave Arm",
+      "file": "programs/wave_arm.txt",
+      "description": "Simple waving motion using joint 2 and 3",
+      "created": "2025-10-13"
+    },
+    {
+      "id": 2,
+      "name": "Square Path",
+      "file": "programs/draw_square.txt",
+      "description": "Moves end effector in square trajectory",
+      "created": "2025-10-12"
+    }
+  ]
+}
