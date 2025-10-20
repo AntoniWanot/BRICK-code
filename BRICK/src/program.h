@@ -15,6 +15,7 @@ public:
     bool direction; // true is clockwise, false is counterclockwise
 
     current_joint();
+    int amount_of_steps();
     current_joint(int joint, int angle, bool direction);
     ~current_joint();
 };

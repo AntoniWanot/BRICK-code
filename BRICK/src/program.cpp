@@ -14,6 +14,16 @@ current_joint::current_joint(int joint, int angle, bool direction)
 current_joint::~current_joint()
 {
 }
+
+int current_joint::amount_of_steps()
+{
+    double steps_tmp = 0;
+    steps_tmp=angle/1.8;
+    steps_tmp=steps_tmp*49;
+    int steps=static_cast<int>(steps_tmp);
+    return steps;
+}
+
 current_step::current_step()
     : number_of_joints(0), joints()
 {
