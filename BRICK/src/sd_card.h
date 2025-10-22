@@ -7,8 +7,9 @@ class sd_card
 private:
     /* data */
 public:
+    
     sd_card(/* args */);
     String return_manifest();
-    void load_program(int program_id);
+    program load_program(int &program_id,int (&pins)[2][2]);
     ~sd_card();
 };

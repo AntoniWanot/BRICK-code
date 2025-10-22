@@ -37,7 +37,7 @@ String sd_card::return_manifest() {
 
     return manifest;
 }
-void sd_card::load_program(int program_id) {
+program sd_card::load_program(int &program_id,int (&pins)[2][2]) {
     File file = SD.open("manifest.json");
     JsonDocument listed_files;
     deserializeJson(listed_files, file);
@@ -65,7 +65,7 @@ void sd_card::load_program(int program_id) {
     JsonArray steps = programObj["steps"];
 
     
-    program current_program(program_id, current_step_load, total_steps);
+    program current_program(program_id, current_step_load, total_steps, pins);
     for (JsonObject step : steps)
     {
         JsonArray joints = step["joints"];

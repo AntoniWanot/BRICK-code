@@ -4,6 +4,7 @@
 #define PROGRAM_H
 
 #include <vector>
+#include <Arduino.h>
 #include <cstddef>
 
 // Represents a single step for a motor/joint
@@ -38,11 +39,13 @@ public:
     int program_id = 0;
     int current_step_id = 0;
     int total_steps = 0;
+    int pins[2][2]; // Step and Dir pins for two joints
 
     // Container holding the program steps in order
     std::vector<current_step> steps;
+    bool run();
 
-    program(int program_id, int current_step_id, int total_steps);
+    program(int &program_id, int &current_step_id, int &total_steps, int (&pins_to)[2][2]);
     ~program();
 
     // Add a step to the program
