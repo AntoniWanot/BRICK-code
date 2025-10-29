@@ -1,5 +1,5 @@
 #include "communication.h"
-bool send_manifest(const String &manifest)
+bool send_manifest()
 {
   sd_card sd;
   String manifest = sd.return_manifest();

@@ -37,7 +37,7 @@ String sd_card::return_manifest() {
 
     return manifest;
 }
-program sd_card::load_program(int &program_id,int (&pins)[2][2]) {
+program sd_card::load_program(int &program_id,int (&pins)[3][2]) {
     File file = SD.open("manifest.json");
     JsonDocument listed_files;
     deserializeJson(listed_files, file);
@@ -86,7 +86,7 @@ program sd_card::load_program(int &program_id,int (&pins)[2][2]) {
                 joint_direction = false;
             }
 
-            current_joint new_joint(joint_id, joint_angle, joint_direction);
+            current_joint new_joint(joint_id, joint_angle, joint_direction, pins[joint_id][0], pins[joint_id][1]);
         }
         current_step new_step(i);
         current_program.add_step(new_step);

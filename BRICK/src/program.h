@@ -14,10 +14,15 @@ public:
     int joint;
     int angle;
     bool direction; // true is clockwise, false is counterclockwise
-
+    int step_pin;
+    int dir_pin;
+    int steps_to_move;
+    int current_step_count = 0;  // Initialize to 0
     current_joint();
     int amount_of_steps();
-    current_joint(int joint, int angle, bool direction);
+    current_joint(int joint, int angle, bool direction, int step_pin, int dir_pin);
+    bool execute_one_step();
+    bool is_completed() const; // Check if this joint has completed its movement
     ~current_joint();
 };
 class current_step
@@ -27,6 +32,8 @@ public:
     std::vector<current_joint> joints;
 
     current_step();
+    bool execute();
+    bool is_completed() const; // Check if all joints in this step are completed
     void add_joint(const current_joint &j);
     current_step(int number_of_joints);
     ~current_step();
@@ -39,13 +46,14 @@ public:
     int program_id = 0;
     int current_step_id = 0;
     int total_steps = 0;
-    int pins[2][2]; // Step and Dir pins for two joints
+    int pins[3][2]; // Step and Dir pins for three joints
 
     // Container holding the program steps in order
     std::vector<current_step> steps;
     bool run();
+    bool is_completed() const; // Check if the entire program is completed
 
-    program(int &program_id, int &current_step_id, int &total_steps, int (&pins_to)[2][2]);
+    program(int &program_id, int &current_step_id, int &total_steps, int (&pins_to)[3][2]);
     ~program();
 
     // Add a step to the program

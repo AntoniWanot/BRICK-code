@@ -1,3 +1,6 @@
+#ifndef SD_CARD_H
+#define SD_CARD_H
+
 #include <SD.h>
 #include <ArduinoJson.h>
 #include "program.h"
@@ -10,6 +13,8 @@ public:
     
     sd_card(/* args */);
     String return_manifest();
-    program load_program(int &program_id,int (&pins)[2][2]);
+    program load_program(int &program_id,int (&pins)[3][2]);
     ~sd_card();
 };
+
+#endif // SD_CARD_H
