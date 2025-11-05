@@ -24,12 +24,16 @@ current_joint::~current_joint()
 {
 }
 
+
 int current_joint::amount_of_steps()
 {
-    double steps_tmp = 0;
-    steps_tmp=angle/1.8;
-    steps_tmp=steps_tmp*49;
-    int steps=static_cast<int>(steps_tmp);
+    // Configuration constants - set these once based on your hardware
+    const int MICROSTEPS_PER_REV = 800; // Change to 1600 if using that setting
+    const int GEAR_RATIO = 49;
+    
+    double steps_per_degree = (MICROSTEPS_PER_REV * GEAR_RATIO) / 360.0;
+    double steps_tmp = angle * steps_per_degree;
+    int steps = static_cast<int>(std::round(steps_tmp));
     return steps;
 }
 
