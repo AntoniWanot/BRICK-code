@@ -213,122 +213,198 @@ void checkStartTimeout() {
 }
 
 String getMainPage() {
-  String html = "<!DOCTYPE html>";
-  html += "<html>";
-  html += "<head>";
-  html += "<title>Robot Brick Controller</title>";
-  html += "<meta charset='UTF-8'>";
-  html += "<meta name='viewport' content='width=device-width, initial-scale=1.0'>";
-  html += "<style>";
-  html += "body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }";
-  html += ".container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }";
-  html += ".tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }";
-  html += ".tab { padding: 10px 20px; background-color: #f0f0f0; border: none; cursor: pointer; font-size: 16px; margin-right: 5px; border-radius: 5px 5px 0 0; }";
-  html += ".tab.active { background-color: #007bff; color: white; }";
-  html += ".tab-content { display: none; text-align: center; }";
-  html += ".tab-content.active { display: block; }";
-  html += ".start-button { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; margin: 20px 0; }";
-  html += ".start-button:hover { background-color: #218838; }";
-  html += ".program-label { font-size: 16px; color: #666; margin-top: 10px; }";
-  html += ".motor-selector { margin: 20px 0; }";
-  html += ".motor-button { background-color: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 5px; }";
-  html += ".motor-button.selected { background-color: #007bff; }";
-  html += ".motor-button:hover { background-color: #5a6268; }";
-  html += ".motor-button.selected:hover { background-color: #0056b3; }";
-  html += ".jog-controls { margin: 30px 0; }";
-  html += ".jog-button { background-color: #17a2b8; color: white; border: none; padding: 20px 40px; font-size: 20px; border-radius: 10px; cursor: pointer; margin: 10px; min-width: 120px; }";
-  html += ".jog-button:hover { background-color: #138496; }";
-  html += ".jog-plus { background-color: #28a745; }";
-  html += ".jog-plus:hover { background-color: #218838; }";
-  html += ".jog-minus { background-color: #dc3545; }";
-  html += ".jog-minus:hover { background-color: #c82333; }";
-  html += ".status { margin: 20px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px; }";
-  html += "</style>";
-  html += "</head>";
-  html += "<body>";
-  html += "<div class='container'>";
-  html += "<h1>🤖 Robot Brick Controller</h1>";
-  html += "<div class='tabs'>";
-  html += "<button class='tab active' onclick='openTab(event, \"main-tab\")'>Program</button>";
-  html += "<button class='tab' onclick='openTab(event, \"control-tab\")'>Sterowanie</button>";
-  html += "</div>";
-  html += "<div id='main-tab' class='tab-content active'>";
-  html += "<h2>Program Testowy</h2>";
-  html += "<button class='start-button' onclick='startProgram()'>START</button>";
-  html += "<div class='program-label'>program_testowy</div>";
-  html += "<div id='status'></div>";
-  html += "</div>";
-  html += "<div id='control-tab' class='tab-content'>";
-  html += "<h2>Sterowanie Silnikami</h2>";
-  html += "<div class='motor-selector'>";
-  html += "<h3>Wybierz Silnik:</h3>";
-  html += "<button id='motor1-btn' class='motor-button selected' onclick='selectMotor(1)'>Silnik 1</button>";
-  html += "<button id='motor2-btn' class='motor-button' onclick='selectMotor(2)'>Silnik 2</button>";
-  html += "</div>";
-  html += "<div class='jog-controls'>";
-  html += "<h3>Sterowanie JOG:</h3>";
-  html += "<div>";
-  html += "<button class='jog-button jog-plus' onpointerdown='startJog("plus")' onpointerup='stopJog()' onpointercancel='stopJog()' onpointerleave='stopJog()'>JOG +</button>";
-  html += "<button class='jog-button jog-minus' onpointerdown='startJog("minus")' onpointerup='stopJog()' onpointercancel='stopJog()' onpointerleave='stopJog()'>JOG -</button>";
-  html += "</div>";
-  html += "</div>";
-  html += "<div class='status' id='motor-status'>Wybrany: Silnik 1 | JOG: Zatrzymany</div>";
-  html += "</div>";
-  html += "</div>";
-  html += "<script>";
-  html += "var selectedMotor = 1;";
-  html += "var jogInterval;";
-  html += "var currentJog = '';";
-  html += "function openTab(evt, tabName) {";
-  html += "var i, tabcontent, tablinks;";
-  html += "tabcontent = document.getElementsByClassName('tab-content');";
-  html += "for (i = 0; i < tabcontent.length; i++) {";
-  html += "tabcontent[i].classList.remove('active');";
-  html += "}";
-  html += "tablinks = document.getElementsByClassName('tab');";
-  html += "for (i = 0; i < tablinks.length; i++) {";
-  html += "tablinks[i].classList.remove('active');";
-  html += "}";
-  html += "document.getElementById(tabName).classList.add('active');";
-  html += "evt.currentTarget.classList.add('active');";
-  html += "}";
-  html += "function startProgram() {";
-  html += "fetch('/start', { method: 'POST' })";
-  html += ".then(response => response.text())";
-  html += ".then(data => {";
-  html += "document.getElementById('status').innerHTML = '<p style=\"color: green;\">' + data + '</p>';";
-  html += "})";
-  html += ".catch(error => {";
-  html += "document.getElementById('status').innerHTML = '<p style=\"color: red;\">Error: ' + error + '</p>';";
-  html += "});";
-  html += "}";
-  html += "function selectMotor(motor) {";
-  html += "selectedMotor = motor;";
-  html += "document.getElementById('motor1-btn').classList.remove('selected');";
-  html += "document.getElementById('motor2-btn').classList.remove('selected');";
-  html += "document.getElementById('motor' + motor + '-btn').classList.add('selected');";
-  html += "fetch('/select_motor' + motor, { method: 'POST' });";
-  html += "updateStatus();";
-  html += "}";
-  html += "function startJog(direction) {";
-  html += "currentJog = direction;";
-  html += "var endpoint = direction === 'plus' ? '/jog_plus' : '/jog_minus';";
-  html += "var ts = Date.now();";
-  html += "fetch(endpoint+'?ts=' + ts, { method: 'POST' });";
-  html += "updateStatus();";
-  html += "}";
-  html += "function stopJog() {";
-  html += "var ts = Date.now();";
-  html += "fetch('/stop_jog?ts=' + ts, { method: 'POST' });";
-  html += "currentJog = '';";
-  html += "updateStatus();";
-  html += "}";
-  html += "function updateStatus() {";
-  html += "var jogStatus = currentJog ? 'JOG ' + (currentJog === 'plus' ? '+' : '-') + ' AKTYWNY' : 'Zatrzymany';";
-  html += "document.getElementById('motor-status').textContent = 'Wybrany: Silnik ' + selectedMotor + ' | JOG: ' + jogStatus;";
-  html += "}";
-  html += "</script>";
-  html += "</body>";
-  html += "</html>";
+  String html = R"HTML(<!DOCTYPE html>
+<html>
+<head>
+  <title>Robot Brick Controller</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; }
+    .container { max-width: 800px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+    .tab { padding: 10px 20px; background-color: #f0f0f0; border: none; cursor: pointer; font-size: 16px; margin-right: 5px; border-radius: 5px 5px 0 0; }
+    .tab.active { background-color: #007bff; color: white; }
+    .tab-content { display: none; text-align: center; }
+    .tab-content.active { display: block; }
+    .start-button { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; margin: 20px 0; }
+    .start-button:hover { background-color: #218838; }
+    .program-label { font-size: 16px; color: #666; margin-top: 10px; }
+    .motor-selector { margin: 20px 0; }
+    .motor-button { background-color: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
+    .motor-button.selected { background-color: #007bff; }
+    .motor-button:hover { background-color: #5a6268; }
+    .motor-button.selected:hover { background-color: #0056b3; }
+    .jog-controls { margin: 30px 0; }
+    .jog-button { background-color: #17a2b8; color: white; border: none; padding: 20px 40px; font-size: 20px; border-radius: 10px; cursor: pointer; margin: 10px; min-width: 120px; }
+    .jog-button:hover { background-color: #138496; }
+    .jog-plus { background-color: #28a745; }
+    .jog-plus:hover { background-color: #218838; }
+    .jog-minus { background-color: #dc3545; }
+    .jog-minus:hover { background-color: #c82333; }
+    .status { margin: 20px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Robot Brick Controller</h1>
+    <div class="tabs">
+      <button class="tab active" onclick="openTab(event, 'main-tab')">Program</button>
+      <button class="tab" onclick="openTab(event, 'control-tab')">Sterowanie</button>
+    </div>
+
+    <div id="main-tab" class="tab-content active">
+      <h2>Available Programs</h2>
+        <div id="program-list">Loading programs...</div>
+        <button class="start-button" onclick="startProgram()">START</button>
+        <div class="program-label" id="selected-program">No program selected</div>
+        <div id="status"></div>
+    </div>
+
+    <div id="control-tab" class="tab-content">
+      <h2>Motor jogging</h2>
+      <div class="motor-selector">
+        <h3>Choose Motor:</h3>
+        <button id="motor1-btn" class="motor-button selected" onclick="selectMotor(1)">Motor 1</button>
+        <button id="motor2-btn" class="motor-button" onclick="selectMotor(2)">Motor 2</button>
+        <button id="motor3-btn" class="motor-button" onclick="selectMotor(3)">Motor 3</button>
+      </div>
+      <div class="jog-controls">
+        <h3>JOG Control:</h3>
+        <div>
+          <button class="jog-button jog-plus" onpointerdown="startJog('plus')" onpointerup="stopJog()" onpointercancel="stopJog()" onpointerleave="stopJog()">JOG +</button>
+          <button class="jog-button jog-minus" onpointerdown="startJog('minus')" onpointerup="stopJog()" onpointercancel="stopJog()" onpointerleave="stopJog()">JOG -</button>
+        </div>
+      </div>
+      <div class="status" id="motor-status">Chosen: Motor 1 | JOG: Stopped</div>
+    </div>
+  </div>
+
+  <script>
+    var selectedMotor = 1;
+    var currentJog = '';
+
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName('tab-content');
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove('active');
+      }
+      tablinks = document.getElementsByClassName('tab');
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove('active');
+      }
+      document.getElementById(tabName).classList.add('active');
+      evt.currentTarget.classList.add('active');
+    }
+
+    let programs = [];
+    let selectedProgramId = null;
+
+    function loadManifest() {
+      fetch('/manifest')
+      .then(resp => {
+        if (!resp.ok) throw new Error('Failed to fetch manifest: ' + resp.status);
+        return resp.json();
+      })
+      .then(data => {
+        programs = data.programs || [];
+        renderProgramList();
+      })
+      .catch(err => {
+        document.getElementById('program-list').textContent = 'Error loading manifest: ' + err;
+      });
+    }
+
+    function renderProgramList() {
+      const container = document.getElementById('program-list');
+      container.innerHTML = '';
+      if (!programs.length) {
+        container.textContent = 'No programs found';
+        return;
+      }
+      const ul = document.createElement('div');
+      programs.forEach(p => {
+        const div = document.createElement('div');
+        div.style.borderBottom = '1px solid #eee';
+        div.style.padding = '8px 0';
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'program';
+        radio.value = p.id;
+        radio.id = 'prog-' + p.id;
+        radio.onclick = () => selectProgram(p.id);
+        div.appendChild(radio);
+
+        const label = document.createElement('label');
+        label.htmlFor = radio.id;
+        label.style.marginLeft = '8px';
+        label.innerHTML = '<strong>' + escapeHtml(p.name) + '</strong> — ' + escapeHtml(p.description || '') + ' <span style="color:#888">(' + (p.created||'') + ')</span>';
+        div.appendChild(label);
+
+        ul.appendChild(div);
+      });
+      container.appendChild(ul);
+    }
+
+    function selectProgram(id) {
+      selectedProgramId = id;
+      const p = programs.find(x => x.id == id) || {};
+      document.getElementById('selected-program').textContent = p.name ? p.name + ' (ID ' + id + ')' : 'ID ' + id;
+    }
+
+    function startProgram() {
+      if (!selectedProgramId) {
+        document.getElementById('status').innerHTML = '<p style="color: red;">Select a program first</p>';
+        return;
+      }
+      fetch('/select_program?id=' + encodeURIComponent(selectedProgramId), { method: 'POST' })
+      .then(resp => resp.text())
+      .then(() => fetch('/start', { method: 'POST' }))
+      .then(resp => resp.text())
+      .then(data => {
+        document.getElementById('status').innerHTML = '<p style="color: green;">' + data + '</p>';
+      })
+      .catch(error => {
+        document.getElementById('status').innerHTML = '<p style="color: red;">Error: ' + error + '</p>';
+      });
+    }
+
+    function escapeHtml(s) { return String(s).replace(/[&<>\"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"}[c]; }); }
+
+    function selectMotor(motor) {
+      selectedMotor = motor;
+      document.getElementById('motor1-btn').classList.remove('selected');
+      document.getElementById('motor2-btn').classList.remove('selected');
+      document.getElementById('motor3-btn').classList.remove('selected');
+      document.getElementById('motor' + motor + '-btn').classList.add('selected');
+      fetch('/select_motor' + motor, { method: 'POST' });
+      updateStatus();
+    }
+
+    function startJog(direction) {
+      currentJog = direction;
+      var endpoint = direction === 'plus' ? '/jog_plus' : '/jog_minus';
+      var ts = Date.now();
+      fetch(endpoint + '?ts=' + ts, { method: 'POST' });
+      updateStatus();
+    }
+
+    function stopJog() {
+      var ts = Date.now();
+      fetch('/stop_jog?ts=' + ts, { method: 'POST' });
+      currentJog = '';
+      updateStatus();
+    }
+
+    function updateStatus() {
+      var jogStatus = currentJog ? 'JOG ' + (currentJog === 'plus' ? '+' : '-') + ' ACTIVE' : 'STOPPED';
+      document.getElementById('motor-status').textContent = 'Chosen: Motor ' + selectedMotor + ' | JOG: ' + jogStatus;
+    }
+  </script>
+</body>
+</html>)HTML";
+
   return html;
 }

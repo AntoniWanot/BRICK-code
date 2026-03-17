@@ -144,7 +144,6 @@
                 document.getElementById('status').innerHTML = '<p style="color: red;">Select a program first</p>';
                 return;
             }
-            // send selection to device, then trigger start
             fetch('/select_program?id=' + encodeURIComponent(selectedProgramId), { method: 'POST' })
             .then(resp => resp.text())
             .then(() => fetch('/start', { method: 'POST' }))
