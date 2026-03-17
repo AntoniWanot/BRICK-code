@@ -18,7 +18,22 @@ bool send_manifest()
   }
   return false;
 }
-
+bool wait_for_ready_signal()
+{
+  unsigned long start_time = millis();
+  while (millis() - start_time < 15000) // Wait up to 15 seconds for response
+  {
+    if (Serial2.available())
+    {
+      String response = Serial2.readStringUntil('\n');
+      if (response == "READY")
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 int receive_program_id()
 {
   while (!Serial2.available())

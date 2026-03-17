@@ -16,26 +16,24 @@ sd_card::~sd_card()
 }
 
 String sd_card::return_manifest() {
-    String manifest = "";
-    File file = SD.open("manifest.json");
-    if (!file) {
-        Serial.println("Error: manifest.json not found");
-        return "";
-    }
-    JsonDocument listed_files;
-    deserializeJson(listed_files, file);
-    JsonArray programs=listed_files["programs"];
+  DynamicJsonDocument listed_files(4096);
+  File file = SD.open("manifest.json");
+  if (!file) {
+    Serial.println("Error: manifest.json not found");
+    return "";
+  }
+  DeserializationError err = deserializeJson(listed_files, file);
+  file.close();
+  if (err) {
+    Serial.print("JSON parse error: ");
+    Serial.println(err.c_str());
+    return "";
+  }
 
-    for (JsonObject program : programs) {
-        manifest += "ID: " + String(program["id"]) + "\n";
-        manifest += "Name: " + String(program["name"]) + "\n";
-        manifest += "File: " + String(program["file"]) + "\n";
-        manifest += "Description: " + String(program["description"]) + "\n";
-        manifest += "Created: " + String(program["created"]) + "\n";
-        manifest += "\n";
-    }
-
-    return manifest;
+  String out;
+  serializeJson(listed_files, out);      // compact JSON string
+  out += "\nEND_OF_MANIFEST\n";         // sentinel
+  return out;
 }
 program sd_card::load_program(int &program_id,int (&pins)[3][2]) {
     File file = SD.open("manifest.json");

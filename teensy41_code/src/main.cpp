@@ -28,10 +28,9 @@ void setup() {
 
 void loop() {
   // Wait for program ID
-  while (!Serial2.available())
-  {
-    // Do nothing, just wait
-  }
+  while (!Serial2.available())();
+  while (wait_for_ready_signal())();
+
   program_id_received = receive_program_id();
   sd_card sd;
   program program_current = sd.load_program(program_id_received, pins);

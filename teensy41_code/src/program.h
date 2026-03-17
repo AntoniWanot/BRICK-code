@@ -25,6 +25,8 @@ public:
     bool is_completed() const; // Check if this joint has completed its movement
     ~current_joint();
 };
+
+
 class current_step
 {
 public:

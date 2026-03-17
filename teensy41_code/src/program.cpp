@@ -27,8 +27,8 @@ current_joint::~current_joint()
 
 int current_joint::amount_of_steps()
 {
-    // Configuration constants - set these once based on your hardware
-    const int MICROSTEPS_PER_REV = 800; // Change to 1600 if using that setting
+    // Configuration constants set these once based on hardware configuration
+    const int MICROSTEPS_PER_REV = 1600; 
     const int GEAR_RATIO = 49;
     
     double steps_per_degree = (MICROSTEPS_PER_REV * GEAR_RATIO) / 360.0;
@@ -80,7 +80,7 @@ bool current_step::execute()
         
         // Small delay between steps for proper stepper motor timing
         // Adjust this delay based on your stepper motor requirements
-        delayMicroseconds(1000); // 1ms delay, adjust as needed
+        delayMicroseconds(50); // 1ms delay, adjust as needed
     }
     
     return true; // All joints completed their movement
