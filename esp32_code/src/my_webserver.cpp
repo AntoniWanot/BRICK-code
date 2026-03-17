@@ -316,6 +316,7 @@ String getMainPage() {
       });
     }
 
+    // Render program list as a table so radios align vertically
     function renderProgramList() {
       const container = document.getElementById('program-list');
       container.innerHTML = '';
@@ -323,29 +324,51 @@ String getMainPage() {
         container.textContent = 'No programs found';
         return;
       }
-      const ul = document.createElement('div');
-      programs.forEach(p => {
-        const div = document.createElement('div');
-        div.style.borderBottom = '1px solid #eee';
-        div.style.padding = '8px 0';
+      const table = document.createElement('table');
+      table.className = 'program-list-table';
+      table.style.width = '100%';
+      table.style.borderCollapse = 'collapse';
 
+      const tbody = document.createElement('tbody');
+      programs.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = '1px solid #eee';
+
+        const tdRadio = document.createElement('td');
+        tdRadio.style.padding = '8px';
+        tdRadio.style.width = '40px';
+        tdRadio.style.verticalAlign = 'top';
         const radio = document.createElement('input');
         radio.type = 'radio';
         radio.name = 'program';
         radio.value = p.id;
         radio.id = 'prog-' + p.id;
         radio.onclick = () => selectProgram(p.id);
-        div.appendChild(radio);
+        tdRadio.appendChild(radio);
+        tr.appendChild(tdRadio);
 
-        const label = document.createElement('label');
-        label.htmlFor = radio.id;
-        label.style.marginLeft = '8px';
-        label.innerHTML = '<strong>' + escapeHtml(p.name) + '</strong> — ' + escapeHtml(p.description || '') + ' <span style="color:#888">(' + (p.created||'') + ')</span>';
-        div.appendChild(label);
+        const tdInfo = document.createElement('td');
+        tdInfo.style.padding = '8px';
+        tdInfo.style.verticalAlign = 'top';
+        const title = document.createElement('div');
+        title.innerHTML = '<strong>' + escapeHtml(p.name) + '</strong>';
+        const desc = document.createElement('div');
+        desc.style.color = '#666';
+        desc.textContent = p.description || '';
+        const meta = document.createElement('div');
+        meta.style.color = '#888';
+        meta.style.fontSize = '12px';
+        meta.textContent = p.created || '';
+        tdInfo.appendChild(title);
+        tdInfo.appendChild(desc);
+        tdInfo.appendChild(meta);
+        tr.appendChild(tdInfo);
 
-        ul.appendChild(div);
+        tbody.appendChild(tr);
       });
-      container.appendChild(ul);
+
+      table.appendChild(tbody);
+      container.appendChild(table);
     }
 
     function selectProgram(id) {
@@ -402,6 +425,9 @@ String getMainPage() {
       var jogStatus = currentJog ? 'JOG ' + (currentJog === 'plus' ? '+' : '-') + ' ACTIVE' : 'STOPPED';
       document.getElementById('motor-status').textContent = 'Chosen: Motor ' + selectedMotor + ' | JOG: ' + jogStatus;
     }
+
+    // Load manifest when the page is ready
+    window.addEventListener('load', loadManifest);
   </script>
 </body>
 </html>)HTML";
