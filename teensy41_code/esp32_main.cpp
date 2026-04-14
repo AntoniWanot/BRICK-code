@@ -69,7 +69,8 @@ void setup() {
 }
 
 void loop() {
-
+  // Main loop - server runs asynchronously
+  // Manifest is received once during setup, not in the loop
   
   checkJogTimeout();
   checkStartTimeout();

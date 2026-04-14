@@ -38,7 +38,6 @@ bool communicator::receive_manifest() {
         Serial.print("[COMM DEBUG] Waiting... elapsed: ");
         Serial.print(millis() - start_time);
         Serial.println("ms, Serial2.available() = false");
-        communicator::send_ready_signal(); // Resend READY signal every second until we get a response
       }
     }
   }
@@ -67,11 +66,6 @@ bool communicator::receive_manifest() {
   Serial.println(response.substring(0, 200));
 
   Serial2.println("MANIFEST_RECEIVED");
-  
-  // Cache the manifest in the webserver
-  extern void setCachedManifest(const String &manifest);
-  setCachedManifest(response);
-  
   return m_manifest.manifest_parser(response);
 }
 

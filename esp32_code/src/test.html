@@ -90,26 +90,39 @@
             { id: 'mock-2', name: 'Mock Program B', description: 'Another test program for UI checks.', created: '2026-03-17' }
         ];
 
-        function loadManifest() {
-            fetch('/manifest')
+        function loadManifest(retries = 0, maxRetries = 3) {
+            console.log('[MANIFEST] Attempt ' + (retries + 1) + ' to load manifest');
+            fetch('/manifest', { timeout: 20000 })
             .then(resp => {
-                if (!resp.ok) throw new Error('Failed to fetch manifest: ' + resp.status);
+                console.log('[MANIFEST] Response status:', resp.status);
+                if (!resp.ok) {
+                    throw new Error('HTTP ' + resp.status);
+                }
                 return resp.json();
             })
             .then(data => {
+                console.log('[MANIFEST] Successfully loaded manifest with', (data.programs || []).length, 'programs');
                 programs = data.programs || [];
                 renderProgramList();
             })
             .catch(err => {
-                //document.getElementById('program-list').textContent = 'Error loading manifest: ' + err;
+                console.error('[MANIFEST] Error:', err.message);
+                // Retry if we haven't exceeded max retries
+                if (retries < maxRetries) {
+                    console.log('[MANIFEST] Retrying in 1 second...');
+                    setTimeout(() => loadManifest(retries + 1, maxRetries), 1000);
+                    return;
+                }
                 // Fallback to mock data so the UI can be tested without a real JSON manifest
+                console.warn('[MANIFEST] Using mock data - device manifest unavailable');
                 programs = mockPrograms;
                 renderProgramList();
                 const container = document.getElementById('program-list');
                 const note = document.createElement('div');
-                note.style.color = '#888';
+                note.style.color = '#d9534f';
                 note.style.marginBottom = '8px';
-                note.textContent = 'Using mock data (manifest unavailable): ' + err;
+                note.style.fontWeight = 'bold';
+                note.textContent = '⚠ Using mock data (manifest unavailable): ' + err.message;
                 container.insertBefore(note, container.firstChild);
             });
         }
