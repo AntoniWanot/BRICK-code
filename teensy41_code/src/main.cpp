@@ -19,6 +19,7 @@ int jog_pins[3][2] = {
 ManualMover manual_mover(pins_output, jog_pins);
 
 int program_id_received = -1;
+unsigned long millis_begin = 0;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(12000);
@@ -35,6 +36,12 @@ void setup() {
   pinMode(pins_output[1][1], OUTPUT);
   pinMode(pins_output[2][0], OUTPUT);
   pinMode(pins_output[2][1], OUTPUT);
+  // Set initial state of motor pins to LOW
+  for (int i = 0; i < 3; i++) {
+    digitalWrite(pins_output[i][0], LOW);
+    digitalWrite(pins_output[i][1], LOW);
+  }
+  
   Serial.println("[✓] Motor output pins configured (3 motors × 2 pins)");
   
   // Initialize ManualMover
@@ -43,7 +50,9 @@ void setup() {
   
   // Send manifest and wait for confirmation
   Serial.println("[→] Waiting for ready signal from controller...");
-  while (!Serial8.available());
+
+  millis_begin = millis();
+  while (!Serial8.available()||millis() - millis_begin < 5000);
   while (wait_for_ready_signal());
   Serial.println("[✓] Ready signal received");
   
@@ -66,7 +75,7 @@ void loop() {
 
 
   
-  if (program_id_received >= 0)
+  if (program_id_received > 0)
   {
     sd_card sd;
     program program_current = sd.load_program(program_id_received, pins_output);

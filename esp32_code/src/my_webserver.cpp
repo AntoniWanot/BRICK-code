@@ -51,6 +51,12 @@ void setupWebServer() {
     request->send(200, "text/plain", "Motor 2 selected");
   });
   
+  server.on("/select_motor3", HTTP_POST, [](AsyncWebServerRequest *request){
+    selectedMotor = 3;
+    Serial.println("Selected Motor 3");
+    request->send(200, "text/plain", "Motor 3 selected");
+  });
+  
   // Handle jog controls
   server.on("/jog_plus", HTTP_POST, handleJogPlus);
   server.on("/jog_minus", HTTP_POST, handleJogMinus);
@@ -84,6 +90,44 @@ void setupWebServer() {
     Serial.println(id);
     Serial2.println(id);
     request->send(200, "text/plain", "Program selected");
+  });
+
+  // Endpoint: request fresh manifest from device
+  server.on("/manifest/refresh", HTTP_POST, [](AsyncWebServerRequest *request){
+    Serial.println("[WEB] Manifest refresh requested - sending READY signal");
+    Serial2.println("READY");
+    unsigned long start_time = millis();
+    const unsigned long MANIFEST_TIMEOUT = 15000;
+    String response;
+    
+    while (millis() - start_time < MANIFEST_TIMEOUT) {
+      while (Serial2.available()) {
+        char c = (char)Serial2.read();
+        response += c;
+        if (response.indexOf("END_OF_MANIFEST") != -1) break;
+      }
+      if (response.indexOf("END_OF_MANIFEST") != -1) break;
+      delay(10);
+    }
+    
+    if (response.length() == 0) {
+      Serial.println("[WEB] ERROR: Timeout waiting for fresh manifest");
+      request->send(504, "application/json", "{\"error\":\"Timeout waiting for manifest\"}");
+      return;
+    }
+    
+    int idx = response.indexOf("END_OF_MANIFEST");
+    if (idx != -1) response = response.substring(0, idx);
+    response.trim();
+    
+    Serial.print("[WEB] Fresh manifest received (length: ");
+    Serial.print(response.length());
+    Serial.println(" bytes)");
+    
+    // Update cache with fresh manifest
+    setCachedManifest(response);
+    
+    request->send(200, "application/json", response);
   });
 
   server.begin();
@@ -235,6 +279,10 @@ String getMainPage() {
         .tab-content.active { display: block; }
         .start-button { background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; margin: 20px 0; }
         .start-button:hover { background-color: #218838; }
+        .refresh-button { background-color: #17a2b8; color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        .refresh-button:hover { background-color: #138496; }
+        .refresh-button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .program-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .program-label { font-size: 16px; color: #666; margin-top: 10px; }
         .motor-selector { margin: 20px 0; }
         .motor-button { background-color: #6c757d; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; margin: 5px; }
@@ -260,7 +308,10 @@ String getMainPage() {
         </div>
 
         <div id="main-tab" class="tab-content active">
-            <h2>Available Programs</h2>
+            <div class="program-header">
+                <h2 style="margin: 0;">Available Programs</h2>
+                <button class="refresh-button" id="refresh-btn" onclick="requestManifest()">Refresh</button>
+            </div>
                 <div id="program-list">Loading programs...</div>
                 <button class="start-button" onclick="startProgram()">START</button>
                 <div class="program-label" id="selected-program">No program selected</div>
@@ -343,8 +394,38 @@ String getMainPage() {
                 note.style.color = '#d9534f';
                 note.style.marginBottom = '8px';
                 note.style.fontWeight = 'bold';
-                note.textContent = '⚠ Using mock data (manifest unavailable): ' + err.message;
+                note.textContent = 'Using mock data (manifest unavailable): ' + err.message;
                 container.insertBefore(note, container.firstChild);
+            });
+        }
+
+        function requestManifest() {
+            console.log('[MANIFEST] Requesting fresh manifest from device...');
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.disabled = true;
+            refreshBtn.textContent = 'Loading...';
+            
+            fetch('/manifest/refresh', { method: 'POST', timeout: 20000 })
+            .then(resp => {
+                console.log('[MANIFEST] Response status:', resp.status);
+                if (!resp.ok) {
+                    throw new Error('HTTP ' + resp.status);
+                }
+                return resp.json();
+            })
+            .then(data => {
+                console.log('[MANIFEST] Fresh manifest loaded with', (data.programs || []).length, 'programs');
+                programs = data.programs || [];
+                renderProgramList();
+                document.getElementById('status').innerHTML = '<p style="color: green;">Manifest refreshed successfully</p>';
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = 'Refresh';
+            })
+            .catch(err => {
+                console.error('[MANIFEST] Error refreshing manifest:', err.message);
+                document.getElementById('status').innerHTML = '<p style="color: red;">Failed to refresh manifest: ' + err.message + '</p>';
+                refreshBtn.disabled = false;
+                refreshBtn.textContent = 'Refresh';
             });
         }
 

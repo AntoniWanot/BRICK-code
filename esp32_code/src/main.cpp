@@ -71,7 +71,7 @@ void setup() {
 void loop() {
 
   
-  checkJogTimeout();
+  //checkJogTimeout();
   checkStartTimeout();
   delay(10);
 }
