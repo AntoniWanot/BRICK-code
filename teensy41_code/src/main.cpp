@@ -53,7 +53,7 @@ void setup() {
   // Send manifest and wait for confirmation
 
   Serial.println("[→] Waiting for ready signal from controller...");
-  while (wait_for_ready_signal());
+  wait_for_ready_signal();
   Serial.println("[✓] Ready signal received");
   Serial.println("[→] Sending manifest to controller...");
   send_manifest();

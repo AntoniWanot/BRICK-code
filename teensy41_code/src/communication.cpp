@@ -22,7 +22,7 @@ bool send_manifest()
 bool wait_for_ready_signal()
 {
   unsigned long start_time = millis();
-  while (millis() - start_time < 5000) // Wait up to 5 seconds for response
+  while (millis() - start_time < 15000) // Wait up to 15 seconds for response
   {
     if(digitalRead(READY_SIGNAL) == HIGH) 
     {

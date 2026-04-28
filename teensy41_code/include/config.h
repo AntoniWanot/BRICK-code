@@ -3,7 +3,7 @@
 //inputs
 #define IN_MOTOR1_PLUS_PIN 36 // motor 1 JOG+ 2 esp32
 #define IN_MOTOR1_MINUS_PIN 37// motor 1 JOG- 4 esp32
-#define IN_MOTOR2_PLUS_PIN 38 // motor 2 JOG+ 5 esp32
+#define IN_MOTOR2_PLUS_PIN 38 // motor 2 JOG+ 23 esp32
 #define IN_MOTOR2_MINUS_PIN 39// motor 2 JOG-  18 esp32
 #define IN_MOTOR3_PLUS_PIN 40 // motor 3 JOG+ 19 esp32
 #define IN_MOTOR3_MINUS_PIN 41// motor 3 JOG- 21 esp32
