@@ -22,15 +22,11 @@ bool send_manifest()
 bool wait_for_ready_signal()
 {
   unsigned long start_time = millis();
-  while (millis() - start_time < 15000) // Wait up to 15 seconds for response
+  while (millis() - start_time < 5000) // Wait up to 5 seconds for response
   {
-    if (Serial8.available())
+    if(digitalRead(READY_SIGNAL) == HIGH) 
     {
-      String response = Serial8.readStringUntil('\n');
-      if (response == "READY")
-      {
-        return true;
-      }
+      return true;
     }
   }
   return false;

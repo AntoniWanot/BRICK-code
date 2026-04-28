@@ -66,6 +66,8 @@ bool current_step::execute()
     }
     
     bool any_joint_active = true;
+    unsigned long total_iterations = 0;
+    unsigned long progress_interval = 5000; // Report every 5000 iterations
     
     // Execute all joints in parallel until all are finished
     while (any_joint_active) {
@@ -78,11 +80,21 @@ bool current_step::execute()
             }
         }
         
-        // Small delay between steps for proper stepper motor timing
-        // Adjust this delay based on your stepper motor requirements
-        delayMicroseconds(50); // 1ms delay, adjust as needed
+        total_iterations++;
+        if (total_iterations % progress_interval == 0) {
+            Serial.print("[*] Progress: ");
+            Serial.print(total_iterations);
+            Serial.println(" iterations");
+        }
+        
+        // Minimal delay between step sets for stepper motor timing
+        // Reduced from 50µs to 2µs for faster execution
+        delayMicroseconds(2);
     }
     
+    Serial.print("[✓] Step completed: ");
+    Serial.print(total_iterations);
+    Serial.println(" total iterations");
     return true; // All joints completed their movement
 }
 
@@ -101,11 +113,11 @@ bool current_joint::execute_one_step()
     if(current_step_count >= steps_to_move)
         return false;
     
-    // Generate step pulse
+    // Generate step pulse - optimized for speed
     digitalWrite(step_pin, HIGH);
-    delayMicroseconds(2); // Minimum pulse width for most stepper drivers (2-5 microseconds)
+    delayMicroseconds(1); // Pulse width reduced to 1µs (stepper drivers typically need 1-2µs)
     digitalWrite(step_pin, LOW);
-    delayMicroseconds(2); // Minimum time between pulses
+    delayMicroseconds(1); // Minimum time between pulses
     
     current_step_count++;
     return true;

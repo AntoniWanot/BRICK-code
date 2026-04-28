@@ -7,6 +7,7 @@
 #define IN_MOTOR2_MINUS_PIN 39// motor 2 JOG-  18 esp32
 #define IN_MOTOR3_PLUS_PIN 40 // motor 3 JOG+ 19 esp32
 #define IN_MOTOR3_MINUS_PIN 41// motor 3 JOG- 21 esp32
+#define READY_SIGNAL 14 // signal from esp32 to teensy that it is ready to receive manifest, 22 esp32
 
 
 //remember pin nr 2 is broken cuurently ^^

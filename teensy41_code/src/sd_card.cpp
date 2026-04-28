@@ -103,7 +103,7 @@ String sd_card::return_manifest() {
   
   // Debug: show what was parsed
   Serial.println("[DEBUG] JSON structure:");
-  if (listed_files.containsKey("programs")) {
+  if (listed_files["programs"].is<JsonArray>()) {
     size_t program_count = listed_files["programs"].size();
     Serial.print("[DEBUG] Found ");
     Serial.print(program_count);
@@ -124,57 +124,99 @@ String sd_card::return_manifest() {
   return out;
 }
 program sd_card::load_program(int &program_id,int (&pins)[3][2]) {
+    int step_id = 0, total_steps_init = 0;  // Local variables for error returns
+    
     File file = SD.open("manifest.json");
+    if (!file) {
+        Serial.println("[!] ERROR: Failed to open manifest.json");
+        return program(program_id, step_id, total_steps_init, pins);
+    }
     JsonDocument listed_files;
     deserializeJson(listed_files, file);
+    file.close();
     JsonArray programs=listed_files["programs"];
 
     String filename = "";
-    for (JsonObject program : programs) {
-        if (program["id"] == program_id) {
-            filename = String(program["file"]);
+    for (JsonObject program_entry : programs) {
+        if (program_entry["id"] == program_id) {
+            filename = String(program_entry["file"]);
             break;
         }
     }
+    
+    if (filename.length() == 0) {
+        Serial.print("[!] ERROR: Program ID ");
+        Serial.print(program_id);
+        Serial.println(" not found in manifest");
+        return program(program_id, step_id, total_steps_init, pins);
+    }
+    
     File program_file = SD.open(filename.c_str());
+    if (!program_file) {
+        Serial.print("[!] ERROR: Could not open program file: ");
+        Serial.println(filename);
+        return program(program_id, step_id, total_steps_init, pins);
+    }
+    
     JsonDocument programs_listed_files;
-    deserializeJson(programs_listed_files, program_file);
+    DeserializationError err = deserializeJson(programs_listed_files, program_file);
+    program_file.close();
+    
+    if (err) {
+        Serial.print("[!] JSON parse error: ");
+        Serial.println(err.c_str());
+        return program(program_id, step_id, total_steps_init, pins);
+    }
     
     JsonObject programObj = programs_listed_files["program"];
     if (!programObj) {
-        Serial.println("Error: no program object in file");
-        return;
+        Serial.println("[!] Error: no program object in file");
+        return program(program_id, step_id, total_steps_init, pins);
     }
 
     int current_step_load = programObj["current_step"] | 0;
     int total_steps = programObj["total_steps"] | 0;
     JsonArray steps = programObj["steps"];
 
-    
     program current_program(program_id, current_step_load, total_steps, pins);
     for (JsonObject step : steps)
     {
         JsonArray joints = step["joints"];
-        int i = 0;
+        current_step new_step;  // Don't pre-allocate; use default constructor
+        
         for (size_t j = 0; j < joints.size(); j++)
         {
             JsonObject joint = joints[j];
-            i++;
             int joint_id = joint["joint"] | 0;
-            int joint_angle = joint["angle"] | 0;
-            bool joint_direction;
-            if (joint["direction"] == 1)
-            {
-                joint_direction = true;
+            
+            // Bounds check: joint_id should be 1-3, which maps to array indices 0-2
+            if (joint_id < 1 || joint_id > 3) {
+                Serial.print("[!] WARNING: Invalid joint ID ");
+                Serial.print(joint_id);
+                Serial.println(" in program, skipping");
+                continue;
             }
-            else
-            {
-                joint_direction = false;
-            }
-
-            current_joint new_joint(joint_id, joint_angle, joint_direction, pins[joint_id][0], pins[joint_id][1]);
+            
+            // Read angle as float first, then convert to int (JSON stores as 90.0, 45.0, etc.)
+            float angle_float = joint["angle"] | 0.0;
+            int joint_angle = (int)angle_float;
+            bool joint_direction = (joint["direction"] == 1) ? true : false;
+            
+            // Debug: print what was read
+            Serial.print("[DEBUG] Joint ID: ");
+            Serial.print(joint_id);
+            Serial.print(", Angle: ");
+            Serial.print(joint_angle);
+            Serial.print(", Direction: ");
+            Serial.println(joint_direction);
+            
+            // Array index is joint_id - 1 (since joint_id is 1-3, not 0-2)
+            int pin_index = joint_id - 1;
+            current_joint new_joint(joint_id, joint_angle, joint_direction, pins[pin_index][0], pins[pin_index][1]);
+            new_step.add_joint(new_joint);
         }
-        current_step new_step(i);
         current_program.add_step(new_step);
     }
+    
+    return current_program;
 }

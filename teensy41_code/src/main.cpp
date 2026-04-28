@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
+#include "config.h"
 #include "sd_card.h"
 #include "program.h"
 #include "communication.h"
 #include "manual_mover.hpp"
-#include "config.h"
+
 
 int pins_output[3][2]={{MOTOR1_STEP_PIN, MOTOR1_DIR_PIN}, {MOTOR2_STEP_PIN, MOTOR2_DIR_PIN}, {MOTOR3_STEP_PIN, MOTOR3_DIR_PIN}}; // Step and Dir pins for three joints
 
@@ -28,7 +29,8 @@ void setup() {
   delay(100); // Brief delay for serial initialization
   Serial.println("\n========== TEENSY 4.1 ROBOT CONTROLLER ==========");
   Serial.println("Initializing system...");
-  
+  //initialize input pins
+  pinMode(READY_SIGNAL, INPUT);
   // Initialize motor output pins
   pinMode(pins_output[0][0], OUTPUT);
   pinMode(pins_output[0][1], OUTPUT);
@@ -49,13 +51,10 @@ void setup() {
   Serial.println("[✓] ManualMover (JOG control) initialized");
   
   // Send manifest and wait for confirmation
-  Serial.println("[→] Waiting for ready signal from controller...");
 
-  millis_begin = millis();
-  while (!Serial8.available()||millis() - millis_begin < 5000);
+  Serial.println("[→] Waiting for ready signal from controller...");
   while (wait_for_ready_signal());
   Serial.println("[✓] Ready signal received");
-  
   Serial.println("[→] Sending manifest to controller...");
   send_manifest();
   Serial.println("[✓] Manifest sent");
@@ -68,9 +67,11 @@ void loop() {
     program_id_received = receive_program_id();
     Serial.print("[✓] Program ID received: ");
     Serial.println(program_id_received);
-    Serial.print("[→] Loading program from SD card... (ID: ");
-    Serial.print(program_id_received);
-    Serial.println(")");
+    if (program_id_received > 0) {
+      Serial.println("[✓] Valid program ID received");
+    } else {
+      Serial.println("[!] Invalid program ID received");
+    }
   }
 
 
@@ -95,8 +96,8 @@ void loop() {
       }
       
       step_count++;
-      if (step_count % 10 == 0) {
-        Serial.print("[*] Progress: Step ");
+      if (step_count % 1 == 0) {  // Report every step
+        Serial.print("[*] Step: ");
         Serial.print(program_current.current_step_id);
         Serial.print(" / ");
         Serial.println(program_current.total_steps);

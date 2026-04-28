@@ -15,6 +15,7 @@ void setup() {
   Serial.println("\n[SETUP] === ESP32 Robot Controller Initialization ===");
   
   // Initialize GPIO pins for robot brick motors
+  pinMode(READY_SIGNAL, OUTPUT);
   pinMode(MOTOR1_PLUS_PIN, OUTPUT);
   pinMode(MOTOR1_MINUS_PIN, OUTPUT);
   pinMode(MOTOR2_PLUS_PIN, OUTPUT);
@@ -25,6 +26,7 @@ void setup() {
   Serial.println("[SETUP] GPIO pins initialized");
   
   // Set all pins to LOW initially
+  digitalWrite(READY_SIGNAL, LOW);
   digitalWrite(MOTOR1_PLUS_PIN, LOW);
   digitalWrite(MOTOR1_MINUS_PIN, LOW);
   digitalWrite(MOTOR2_PLUS_PIN, LOW);

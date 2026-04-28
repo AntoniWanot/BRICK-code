@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <vector>
 #include <ArduinoJson.h>
+#include "config.h"
 struct Program_Entry
 {
     int id;

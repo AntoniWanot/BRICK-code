@@ -13,8 +13,8 @@ ManualMover::ManualMover(int (*motor_pins)[2], int jog_input_pins[3][2])
 void ManualMover::init() {
   // Configure JOG input pins
   for (int i = 0; i < 3; i++) {
-    pinMode(jog_pins[i][0], INPUT);  // PLUS pin
-    pinMode(jog_pins[i][1], INPUT);  // MINUS pin
+    pinMode(jog_pins[i][0], INPUT_PULLUP);  // PLUS pin
+    pinMode(jog_pins[i][1], INPUT_PULLUP);  // MINUS pin
   }
   
   Serial.println("ManualMover initialized");
