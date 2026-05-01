@@ -6,6 +6,7 @@
 // Function declarations
 void setupWebServer();
 void setCachedManifest(const String &manifest);
+void handleIncomingManifest();
 void handleRoot(AsyncWebServerRequest *request);
 void handleStart(AsyncWebServerRequest *request);
 void handleJogPlus(AsyncWebServerRequest *request);
@@ -17,6 +18,8 @@ String getMainPage();
 
 // Global variables
 extern AsyncWebServer server;
-extern int selectedMotor; 
+extern int selectedMotor;
+extern bool g_manifestAvailable;
+extern bool g_waitingForManifest; 
 
 #endif

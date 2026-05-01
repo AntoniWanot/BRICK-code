@@ -4,8 +4,8 @@ communicator::communicator() {
 }
 
 bool communicator::send_ready_signal() {
-  Serial.println("[COMM] Sending READY signal");
-  digitalWrite(READY_SIGNAL, HIGH);
+  Serial.println("[COMM] Sending READY signal via Serial2");
+  Serial2.println("READY");
   return true;
 }
 bool communicator::receive_manifest() {
@@ -67,7 +67,7 @@ bool communicator::receive_manifest() {
   Serial.println(response.substring(0, 200));
 
   Serial2.println("MANIFEST_RECEIVED");
-  digitalWrite(READY_SIGNAL, LOW);
+
   
   // Cache the manifest in the webserver
   extern void setCachedManifest(const String &manifest);

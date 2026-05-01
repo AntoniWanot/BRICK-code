@@ -7,9 +7,12 @@ AsyncWebServer server(80);
 int selectedMotor = 1; // deafult motor is 1
 unsigned long lastJogSeq = 0;
 
-// Global manifest cache
+// Global manifest cache and serial handler
 String g_cachedManifest = "";
 bool g_manifestAvailable = false;
+String g_incomingManifest = "";
+bool g_waitingForManifest = false;
+unsigned long g_manifestRequestTime = 0;
 
 void setCachedManifest(const String &manifest) {
   g_cachedManifest = manifest;
@@ -17,6 +20,59 @@ void setCachedManifest(const String &manifest) {
   Serial.print("[WEB] Manifest cached (length: ");
   Serial.print(manifest.length());
   Serial.println(" bytes)");
+  
+  // Send acknowledgment to Teensy
+  Serial2.println("MANIFEST_RECEIVED");
+  Serial.println("[COMM] Sent MANIFEST_RECEIVED to Teensy");
+}
+
+// Non-blocking manifest reader - call this in main loop
+void handleIncomingManifest() {
+  static unsigned long lastByteTime = 0;
+  
+  if (Serial2.available()) {
+    while (Serial2.available()) {
+      char c = (char)Serial2.read();
+      g_incomingManifest += c;
+      lastByteTime = millis();
+    }
+    
+    // Check if we have complete, balanced JSON
+    int openBraces = 0;
+    int closeBraces = 0;
+    int jsonStart = -1;
+    
+    for (int i = 0; i < g_incomingManifest.length(); i++) {
+      if (g_incomingManifest[i] == '{') {
+        if (jsonStart == -1) jsonStart = i;
+        openBraces++;
+      }
+      if (g_incomingManifest[i] == '}') {
+        closeBraces++;
+      }
+    }
+    
+    // If we have balanced braces and found valid JSON
+    if (jsonStart >= 0 && openBraces > 0 && openBraces == closeBraces) {
+      String json = g_incomingManifest.substring(jsonStart, jsonStart + g_incomingManifest.length() - jsonStart);
+      
+      Serial.print("[COMM] ✓ Complete JSON received - length: ");
+      Serial.println(json.length());
+      Serial.print("[COMM] First 150 chars: ");
+      Serial.println(json.substring(0, 150));
+      
+      // Validate it's the manifest by checking for "programs" key
+      if (json.indexOf("\"programs\"") != -1) {
+        Serial.println("[COMM] ✓ Valid manifest JSON with 'programs' key");
+        setCachedManifest(json);
+        g_incomingManifest = ""; // Clear buffer
+        g_waitingForManifest = false;
+        return;
+      } else {
+        Serial.println("[COMM] ✗ JSON received but no 'programs' key found");
+      }
+    }
+  }
 }
 
 // autostop parameters
@@ -67,8 +123,23 @@ void setupWebServer() {
     Serial.println("[WEB] Manifest endpoint called");
     
     if (!g_manifestAvailable || g_cachedManifest.length() == 0) {
-      Serial.println("[WEB] WARNING: Manifest not yet cached, returning error");
-      request->send(503, "application/json", "{\"error\":\"Manifest not yet received from device\"}");
+      if (g_waitingForManifest) {
+        // Manifest refresh in progress
+        unsigned long elapsed = millis() - g_manifestRequestTime;
+        if (elapsed > 20000) {
+          // Timeout waiting for manifest
+          g_waitingForManifest = false;
+          Serial.println("[WEB] WARNING: Manifest refresh timeout");
+          request->send(504, "application/json", "{\"error\":\"Manifest refresh timeout\"}");
+        } else {
+          // Still waiting
+          Serial.println("[WEB] Manifest refresh in progress...");
+          request->send(202, "application/json", "{\"status\":\"manifest refresh in progress\"}");
+        }
+      } else {
+        Serial.println("[WEB] WARNING: Manifest not yet cached, returning error");
+        request->send(503, "application/json", "{\"error\":\"Manifest not yet received from device\"}");
+      }
       return;
     }
     
@@ -95,39 +166,12 @@ void setupWebServer() {
   // Endpoint: request fresh manifest from device
   server.on("/manifest/refresh", HTTP_POST, [](AsyncWebServerRequest *request){
     Serial.println("[WEB] Manifest refresh requested - sending READY signal");
+    g_waitingForManifest = true;
+    g_manifestRequestTime = millis();
     Serial2.println("READY");
-    unsigned long start_time = millis();
-    const unsigned long MANIFEST_TIMEOUT = 15000;
-    String response;
     
-    while (millis() - start_time < MANIFEST_TIMEOUT) {
-      while (Serial2.available()) {
-        char c = (char)Serial2.read();
-        response += c;
-        if (response.indexOf("END_OF_MANIFEST") != -1) break;
-      }
-      if (response.indexOf("END_OF_MANIFEST") != -1) break;
-      delay(10);
-    }
-    
-    if (response.length() == 0) {
-      Serial.println("[WEB] ERROR: Timeout waiting for fresh manifest");
-      request->send(504, "application/json", "{\"error\":\"Timeout waiting for manifest\"}");
-      return;
-    }
-    
-    int idx = response.indexOf("END_OF_MANIFEST");
-    if (idx != -1) response = response.substring(0, idx);
-    response.trim();
-    
-    Serial.print("[WEB] Fresh manifest received (length: ");
-    Serial.print(response.length());
-    Serial.println(" bytes)");
-    
-    // Update cache with fresh manifest
-    setCachedManifest(response);
-    
-    request->send(200, "application/json", response);
+    // Return immediately - manifest will arrive asynchronously
+    request->send(200, "application/json", "{\"status\":\"manifest request sent\"}");
   });
 
   server.begin();

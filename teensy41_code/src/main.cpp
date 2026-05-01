@@ -29,8 +29,6 @@ void setup() {
   delay(100); // Brief delay for serial initialization
   Serial.println("\n========== TEENSY 4.1 ROBOT CONTROLLER ==========");
   Serial.println("Initializing system...");
-  //initialize input pins
-  pinMode(READY_SIGNAL, INPUT);
   // Initialize motor output pins
   pinMode(pins_output[0][0], OUTPUT);
   pinMode(pins_output[0][1], OUTPUT);
@@ -63,14 +61,27 @@ void setup() {
 }
 
 void loop() {
+  // Check for incoming messages from ESP32
   if (Serial8.available()) {
-    program_id_received = receive_program_id();
-    Serial.print("[✓] Program ID received: ");
-    Serial.println(program_id_received);
-    if (program_id_received > 0) {
-      Serial.println("[✓] Valid program ID received");
+    String incoming = Serial8.readStringUntil('\n');
+    incoming.trim();
+    
+    if (incoming == "READY") {
+      // ESP32 is requesting manifest (refresh)
+      Serial.println("[COMM] Received READY from ESP32 - sending fresh manifest");
+      send_manifest();
     } else {
-      Serial.println("[!] Invalid program ID received");
+      // Try to parse as program ID
+      int program_id = incoming.toInt();
+      if (program_id > 0) {
+        program_id_received = program_id;
+        Serial.print("[✓] Program ID received: ");
+        Serial.println(program_id_received);
+        Serial.println("[✓] Valid program ID received");
+      } else {
+        Serial.print("[!] Unknown message from ESP32: ");
+        Serial.println(incoming);
+      }
     }
   }
 
@@ -117,6 +128,9 @@ void loop() {
     Serial.print(execution_time);
     Serial.println(" ms");
     Serial.println("================================================\n");
+    
+    // Reset program ID so we don't run it again
+    program_id_received = -1;
   }
   // Check for manual JOG input between program steps
     manual_mover.check_inputs();

@@ -120,8 +120,7 @@ String sd_card::return_manifest() {
   Serial.print("[DEBUG] Serialized content: ");
   Serial.println(out);
   
-  out += "\nEND_OF_MANIFEST\n";         // sentinel
-  return out;
+  return out;  // Just send JSON, no extra sentinel
 }
 program sd_card::load_program(int &program_id,int (&pins)[3][2]) {
     int step_id = 0, total_steps_init = 0;  // Local variables for error returns

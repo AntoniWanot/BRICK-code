@@ -15,7 +15,6 @@ void setup() {
   Serial.println("\n[SETUP] === ESP32 Robot Controller Initialization ===");
   
   // Initialize GPIO pins for robot brick motors
-  pinMode(READY_SIGNAL, OUTPUT);
   pinMode(MOTOR1_PLUS_PIN, OUTPUT);
   pinMode(MOTOR1_MINUS_PIN, OUTPUT);
   pinMode(MOTOR2_PLUS_PIN, OUTPUT);
@@ -26,7 +25,6 @@ void setup() {
   Serial.println("[SETUP] GPIO pins initialized");
   
   // Set all pins to LOW initially
-  digitalWrite(READY_SIGNAL, LOW);
   digitalWrite(MOTOR1_PLUS_PIN, LOW);
   digitalWrite(MOTOR1_MINUS_PIN, LOW);
   digitalWrite(MOTOR2_PLUS_PIN, LOW);
@@ -50,28 +48,25 @@ void setup() {
   delay(1000);
   Serial.println("[SETUP] Web server started");
   
-  // Initialize communicator and receive manifest
+  // Initialize communicator - send ready signal, manifest will arrive asynchronously
   Serial.println("[SETUP] Sending ready signal...");
   comm.send_ready_signal();
-  Serial.println("[SETUP] Ready signal sent");
-  
-  // Wait a moment for Teensy to respond
-  delay(100);
-  
-  // Receive manifest from Teensy
-  Serial.println("[SETUP] Waiting for manifest from Teensy...");
-  if (comm.receive_manifest()) {
-    manifest_received = true;
-    Serial.println("[SETUP] ✓ Manifest received and parsed successfully");
-  } else {
-    Serial.println("[SETUP] ✗ Failed to receive manifest");
-  }
+  Serial.println("[SETUP] Ready signal sent - manifest will arrive via handleIncomingManifest() in loop");
   
   Serial.println("[SETUP] === Initialization Complete ===\n");
 }
 
 void loop() {
-
+  // Handle incoming manifest data from Teensy (non-blocking)
+  handleIncomingManifest();
+  
+  // Debug: periodically check if Serial2 has data
+  static unsigned long lastDebugTime = 0;
+  if (millis() - lastDebugTime > 5000) {  // Every 5 seconds
+    lastDebugTime = millis();
+    Serial.print("[DEBUG] Serial2.available(): ");
+    Serial.println(Serial2.available());
+  }
   
   //checkJogTimeout();
   checkStartTimeout();
