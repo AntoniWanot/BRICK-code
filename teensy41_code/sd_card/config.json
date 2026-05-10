@@ -1,0 +1,28 @@
+{
+  "motors": [
+    {
+      "id": 1,
+      "cube_position": 1,
+      "limits": {
+        "min_degrees": -180,
+        "max_degrees": 190
+      }
+    },
+    {
+      "id": 2,
+      "cube_position": 2,
+      "limits": {
+        "min_degrees": -90,
+        "max_degrees": 90
+      }
+    },
+    {
+      "id": 3,
+      "cube_position": 3,
+      "limits": {
+        "min_degrees": 0,
+        "max_degrees": 270
+      }
+    }
+  ]
+}

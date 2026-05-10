@@ -219,3 +219,116 @@ program sd_card::load_program(int &program_id,int (&pins)[3][2]) {
     
     return current_program;
 }
+bool sd_card::validate_motor_position(int position) {
+    // Valid positions: 0=FRONT, 1=TOP, 2=BOTTOM, 3=LEFT, 4=RIGHT (5=BACK not usable)
+    return (position >= 0 && position <= 4);
+}
+
+bool sd_card::validate_motor_angle(int motor_id, int angle, const all_motors_config &config) {
+    // Find motor configuration
+    for (int i = 0; i < config.motor_count; i++) {
+        if (config.motors[i].id == motor_id) {
+            return (angle >= config.motors[i].min_degrees && angle <= config.motors[i].max_degrees);
+        }
+    }
+    return false; 
+}
+
+all_motors_config sd_card::load_config() {
+    all_motors_config result = {{}, 0, false};
+    
+    File file = SD.open("config.json");
+    if (!file) {
+        Serial.println("[!] ERROR: Could not open config.json");
+        return result;
+    }
+    
+    JsonDocument config;
+    DeserializationError err = deserializeJson(config, file);
+    file.close();
+    
+    if (err) {
+        Serial.print("[!] JSON parse error in config.json: ");
+        Serial.println(err.c_str());
+        return result;
+    }
+
+    JsonVariant motors_var = config["motors"];
+    if (!motors_var.is<JsonArray>()) {
+        Serial.println("[!] ERROR: 'motors' key not found or not an array in config.json");
+        return result;
+    }
+    JsonArray motors_array = motors_var.as<JsonArray>();
+    
+    int motor_count = 0;
+    Serial.println("[→] Parsing motor configurations from config.json:");
+    
+    for (JsonObject motor_obj : motors_array) {
+        if (motor_count >= 6) {
+            Serial.println("[!] WARNING: Maximum 6 motors supported, ignoring additional motors");
+            break;
+        }
+        
+        int motor_id = motor_obj["id"] | -1;
+        int cube_position = motor_obj["cube_position"] | -1;
+        
+        // Extract limits
+        JsonObject limits = motor_obj["limits"];
+        int min_deg = limits["min_degrees"] | 0;
+        int max_deg = limits["max_degrees"] | 0;
+        
+        // Validate cube position
+        if (!validate_motor_position(cube_position)) {
+            Serial.print("[!] WARNING: Invalid cube_position ");
+            Serial.print(cube_position);
+            Serial.print(" for motor ");
+            Serial.print(motor_id);
+            Serial.println(" (valid: 0-4)");
+            continue;
+        }
+        
+        // Validate angle limits
+        if (min_deg >= max_deg) {
+            Serial.print("[!] WARNING: Invalid angle limits for motor ");
+            Serial.print(motor_id);
+            Serial.print(" (min ");
+            Serial.print(min_deg);
+            Serial.print(" >= max ");
+            Serial.print(max_deg);
+            Serial.println(")");
+            continue;
+        }
+        
+        // Store motor config
+        result.motors[motor_count].id = motor_id;
+        result.motors[motor_count].cube_position = cube_position;
+        result.motors[motor_count].min_degrees = min_deg;
+        result.motors[motor_count].max_degrees = max_deg;
+        
+        // Debug output
+        Serial.print("[✓] Motor ");
+        Serial.print(motor_id);
+        Serial.print(" - Position: ");
+        Serial.print(cube_position);
+        Serial.print(", Angle limits: ");
+        Serial.print(min_deg);
+        Serial.print("° to ");
+        Serial.print(max_deg);
+        Serial.println("°");
+        
+        motor_count++;
+    }
+    
+    result.motor_count = motor_count;
+    result.valid = (motor_count > 0);
+    
+    if (result.valid) {
+        Serial.print("[✓] Configuration loaded successfully: ");
+        Serial.print(motor_count);
+        Serial.println(" motors configured");
+    } else {
+        Serial.println("[!] ERROR: No valid motors found in config.json");
+    }
+    
+    return result;
+}

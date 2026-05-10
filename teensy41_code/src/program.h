@@ -22,7 +22,7 @@ public:
     int amount_of_steps();
     current_joint(int joint, int angle, bool direction, int step_pin, int dir_pin);
     bool execute_one_step();
-    bool is_completed() const; // Check if this joint has completed its movement
+    bool is_completed() const; 
     ~current_joint();
 };
 
