@@ -201,7 +201,7 @@ bool program::run()
         }
     }
     
-    return true; // Program still running
+    return true; // Program still running //nowwwwwwwww???
 }
 
 bool program::is_completed() const
