@@ -86,10 +86,8 @@ bool current_step::execute()
             Serial.print(total_iterations);
             Serial.println(" iterations");
         }
-        
-        // Minimal delay between step sets for stepper motor timing
-        // Reduced from 50µs to 2µs for faster execution
-        delayMicroseconds(2);
+         
+        delayMicroseconds(50);
     }
     
     Serial.print("[✓] Step completed: ");
@@ -115,9 +113,9 @@ bool current_joint::execute_one_step()
     
     // Generate step pulse - optimized for speed
     digitalWrite(step_pin, HIGH);
-    delayMicroseconds(1); // Pulse width reduced to 1µs (stepper drivers typically need 1-2µs)
+    delayMicroseconds(20); 
     digitalWrite(step_pin, LOW);
-    delayMicroseconds(1); // Minimum time between pulses
+    delayMicroseconds(20); 
     
     current_step_count++;
     return true;
