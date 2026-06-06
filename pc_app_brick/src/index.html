@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRICK - Robotics Within Reach</title>
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script type="module">
+        import { invoke } from '@tauri-apps/api/tauri';
+        window.__TAURI_INVOKE__ = invoke;
+    </script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <h1>BRICK</h1>
+            <p class="subtitle">Robotics Within Reach - Block Programming</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="workspace-section">
+            <div class="section-header">
+                <h2><i class="fas fa-cube"></i> Workspace</h2>
+                <div class="helper-text">Drag blocks from the toolbox to create your robot program</div>
+            </div>
+            <div id="blocklyDiv"></div>
+        </div>
+        
+        <div class="output-panel">
+            <div class="section-header">
+                <h2><i class="fas fa-code"></i> Output</h2>
+                <div class="step-counter" id="stepCounter">0 steps</div>
+            </div>
+
+            <div class="button-group">
+                <button id="generateBtn" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Generate JSON
+                </button>
+                <button id="sendBtn" class="btn btn-success" title="Send to connected device" disabled>
+                    <i class="fas fa-arrow-up"></i> Send to Device
+                </button>
+                <button id="copyBtn" class="btn btn-secondary" title="Copy JSON to clipboard" disabled>
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+                <button id="downloadBtn" class="btn btn-secondary" title="Download JSON file" disabled>
+                    <i class="fas fa-download"></i> Download
+                </button>
+                <button id="clearBtn" class="btn btn-danger" title="Clear all blocks">
+                    <i class="fas fa-trash"></i> Clear
+                </button>
+            </div>
+
+            <div class="output-container">
+                <pre id="jsonOutput"><i class="fas fa-info-circle"></i> Arrange blocks and click Generate JSON</pre>
+                <div id="feedbackMsg" class="feedback-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
