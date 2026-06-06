@@ -7,6 +7,10 @@
     <script src="https://unpkg.com/blockly/blockly.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script type="module">
+        import { invoke } from '@tauri-apps/api/tauri';
+        window.__TAURI_INVOKE__ = invoke;
+    </script>
 </head>
 <body>
     <header class="app-header">
@@ -34,6 +38,9 @@
             <div class="button-group">
                 <button id="generateBtn" class="btn btn-primary">
                     <i class="fas fa-play"></i> Generate JSON
+                </button>
+                <button id="sendBtn" class="btn btn-success" title="Send to connected device" disabled>
+                    <i class="fas fa-arrow-up"></i> Send to Device
                 </button>
                 <button id="copyBtn" class="btn btn-secondary" title="Copy JSON to clipboard" disabled>
                     <i class="fas fa-copy"></i> Copy

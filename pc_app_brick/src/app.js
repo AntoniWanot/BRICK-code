@@ -1,4 +1,92 @@
 // ==========================================
+// TAURI INTEGRATION
+// ==========================================
+let tauriAvailable = false;
+
+// Import Tauri API
+if (window.__TAURI_INVOKE__) {
+    tauriAvailable = true;
+    window.invoke = window.__TAURI_INVOKE__;
+} else {
+    console.warn('Tauri API not available');
+}
+
+// ==========================================
+// DEVICE COMMUNICATION
+// ==========================================
+
+let connectedDevices = [];
+
+async function scanAvailablePorts() {
+    if (!tauriAvailable) {
+        showFeedback('Tauri not available', 'error');
+        return [];
+    }
+
+    try {
+        const ports = await window.invoke('scan_ports');
+        showFeedback(`Found ${ports.length} available ports`, 'success');
+        return ports;
+    } catch (error) {
+        showFeedback(`Error scanning ports: ${error}`, 'error');
+        return [];
+    }
+}
+
+async function connectDevice(deviceName, port, baudRate = 115200) {
+    if (!tauriAvailable) {
+        showFeedback('Tauri not available', 'error');
+        return false;
+    }
+
+    try {
+        const result = await window.invoke('connect_device', {
+            device_name: deviceName,
+            port: port,
+            baud_rate: baudRate,
+        });
+        showFeedback(result, 'success');
+        return true;
+    } catch (error) {
+        showFeedback(`Connection failed: ${error}`, 'error');
+        return false;
+    }
+}
+
+async function sendProgramToDevice(deviceName, programJson) {
+    if (!tauriAvailable) {
+        showFeedback('Tauri not available', 'error');
+        return false;
+    }
+
+    try {
+        const result = await window.invoke('send_program', {
+            device_name: deviceName,
+            program_json: programJson,
+        });
+        showFeedback(`Sent to ${deviceName}: ${result}`, 'success');
+        return true;
+    } catch (error) {
+        showFeedback(`Send failed: ${error}`, 'error');
+        return false;
+    }
+}
+
+async function getConnectedDevices() {
+    if (!tauriAvailable) {
+        return [];
+    }
+
+    try {
+        connectedDevices = await window.invoke('get_connected_devices');
+        return connectedDevices;
+    } catch (error) {
+        console.error('Error getting devices:', error);
+        return [];
+    }
+}
+
+// ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
 
@@ -259,9 +347,41 @@ document.getElementById('generateBtn').addEventListener('click', function() {
         // Update UI
         document.getElementById('copyBtn').disabled = false;
         document.getElementById('downloadBtn').disabled = false;
+        document.getElementById('sendBtn').disabled = false;
         updateStepCounter(JSON.parse(jsonResult).program.total_steps);
         
         showFeedback('JSON generated successfully', 'success');
+    }
+});
+
+//Send to device
+
+document.getElementById('sendBtn').addEventListener('click', async function() {
+    const jsonText = document.getElementById('jsonOutput').textContent;
+    
+    if (!jsonText || jsonText.includes('Arrange blocks')) {
+        showFeedback('Please generate JSON first', 'error');
+        return;
+    }
+
+    // Get connected devices
+    const devices = await getConnectedDevices();
+    
+    if (devices.length === 0) {
+        // Show simple port selection (you can make this more sophisticated)
+        const port = prompt('Enter device port (e.g., /dev/ttyUSB0 or COM3):');
+        if (!port) return;
+        
+        const device = prompt('Enter device name (e.g., esp32):');
+        if (!device) return;
+        
+        const connected = await connectDevice(device, port);
+        if (!connected) return;
+        
+        await sendProgramToDevice(device, jsonText);
+    } else {
+        // Send to first connected device
+        await sendProgramToDevice(devices[0].device, jsonText);
     }
 });
 
