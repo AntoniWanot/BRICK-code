@@ -301,3 +301,21 @@ pre {
         grid-column: auto;
     }
 }
+
+
+.blocklyToolboxDiv {
+    display: block !important;
+    visibility: visible !important;
+    width: auto !important;
+    min-width: 150px;
+    overflow-y: auto !important;
+}
+
+.blocklyFlyout {
+    display: block !important;
+    visibility: visible !important;
+}
+
+#blocklyDiv .blocklyWorkspace {
+    display: flex;
+}

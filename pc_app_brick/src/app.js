@@ -231,7 +231,24 @@ const toolbox = {
 const workspace = Blockly.inject('blocklyDiv', {
     toolbox: toolbox,
     scrollbars: true,
-    trashcan: true
+    trashcan: true,
+    toolboxPosition: 'left',
+    collapse: false,
+    comments: false,
+    disable: false,
+    maxBlocks: Infinity,
+    trashcan: true,
+    horizontalLayout: false,
+    toolboxPosition: 'left',
+    css: true,
+    media: 'https://unpkg.com/blockly/media/',
+    zoom: {
+        controls: true,
+        wheel: true,
+        startScale: 1.0,
+        maxScale: 3,
+        minScale: 0.3
+    }
 });
 
 // ========================
